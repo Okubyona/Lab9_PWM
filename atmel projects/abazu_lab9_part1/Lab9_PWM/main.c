@@ -16,7 +16,7 @@
 #include "simAVRHeader.h"
 #endif
 
-typedef enum States {init, wait, C_4, D_4, E_4} state;
+typedef enum States {init, wait, C_4, D_4, E_4} States;
 
 volatile unsigned char TimerFlag = 0; // TimerISR() sets this to 1. C programmer should clear to 0.
 
@@ -28,7 +28,7 @@ void set_PWM (double frequency) {
 
     if (frequency != current_frequency) {
         if (!frequency) { TCCR3B &= 0x08; }
-        else {TCCR3B |= 0x03; }
+        else { TCCR3B |= 0x03; }
 
         if (frequency < 0.954) { OCR3A = 0xFFFF; }
 
@@ -93,7 +93,7 @@ void TimerSet(unsigned long M) {
     _avr_timer_cntcurr = _avr_timer_M;
 }
 
-void Tick(int &state) {
+void Tick(int state) {
     unsigned char tmpA = ~PINC;
 
     switch (state) {
@@ -102,9 +102,9 @@ void Tick(int &state) {
             break;
 
         case wait:
-            if (tmpA = 0x01) { state = C_4; }
-            else if (tmpA = 0x02) { state = D_4; }
-            else if (tmpA = 0x04) { state = E_4; }
+            if (tmpA == 0x01) { state = C_4; }
+            else if (tmpA == 0x02) { state = D_4; }
+            else if (tmpA == 0x04) { state = E_4; }
             else { state = wait; }
             break;
 
@@ -154,15 +154,21 @@ int main(void) {
     DDRC = 0x00; PORTC = 0xFF;
     DDRB = 0x40; PORTB = 0x00;
 
-    unsigned char tmpD = 0x00;
-
     PWM_on();
+	
+	TimerOn();
+	TimerSet(600);
 
-    state = init;
+    States state = init;
 
     /* Insert your solution below */
     while (1) {
+		set_PWM(261.63);
 
+		while(!TimerFlag) {}
+		TimerFlag = 0;
     }
     return 1;
 }
+
+
