@@ -28,7 +28,7 @@ void set_PWM (double frequency) {
 
     if (frequency != current_frequency) {
         if (!frequency) { TCCR3B &= 0x08; }
-        else { TCCR3B |= 0x03; }
+        else {TCCR3B |= 0x03; }
 
         if (frequency < 0.954) { OCR3A = 0xFFFF; }
 
@@ -38,6 +38,7 @@ void set_PWM (double frequency) {
 
         TCNT3 = 0;
         current_frequency = frequency;
+
     }
 
 }
@@ -93,8 +94,10 @@ void TimerSet(unsigned long M) {
     _avr_timer_cntcurr = _avr_timer_M;
 }
 
-void Tick(int state) {
-    unsigned char tmpA = ~PINC;
+int Tick(int state) {
+    unsigned char A0 = ~PINA & 0x01;
+    unsigned char A1 = ~PINA & 0x02;
+    unsigned char A2 = ~PINA & 0x04;
 
     switch (state) {
         case init:
@@ -102,22 +105,31 @@ void Tick(int state) {
             break;
 
         case wait:
-            if (tmpA == 0x01) { state = C_4; }
-            else if (tmpA == 0x02) { state = D_4; }
-            else if (tmpA == 0x04) { state = E_4; }
+            if (A0 && !A1 && !A2) { state = C_4; }
+            else if (!A0 && A1 && !A2) { state = D_4; }
+            else if (!A0 && !A1 && A2) { state = E_4; }
             else { state = wait; }
             break;
 
         case C_4:
-            state = (tmpA && 0x01) ? C_4: wait;
+            if (A0 && !A1 && !A2) { state = C_4; }
+            else if (!A0 && A1 && !A2) { state = D_4; }
+            else if (!A0 && !A1 && A2) { state = E_4; }
+            else if (!A0 && !A1 && !A2) { state = wait; }
             break;
 
         case D_4:
-            state = (tmpA && 0x02) ? D_4: wait;
+            if (!A0 && A1 && !A2) { state = D_4; }
+            else if (A0 && !A1 && !A2) { state = C_4; }
+            else if (!A0 && !A1 && A2) { state = E_4; }
+            else if (!A0 && !A1 && !A2) { state = wait; }
             break;
 
         case E_4:
-            state = (tmpA && 0x04) ? E_4: wait;
+            if (!A0 && !A1 && A2) { state = E_4; }
+            else if (A0 && !A1 && !A2) { state = C_4; }
+            else if (!A0 && A1 && !A2) { state = D_4; }
+            else if (!A0 && !A1 && !A2) { state = wait; }
             break;
 
         default:
@@ -147,28 +159,26 @@ void Tick(int state) {
             break;
     }
 
-    return;
+    return state;
 }
 
 int main(void) {
-    DDRC = 0x00; PORTC = 0xFF;
+    DDRA = 0x00; PORTA = 0xFF;
     DDRB = 0x40; PORTB = 0x00;
 
-    PWM_on();
-	
 	TimerOn();
-	TimerSet(600);
+	TimerSet(250);
+
+    PWM_on();
 
     States state = init;
 
     /* Insert your solution below */
     while (1) {
-		set_PWM(261.63);
+        state = Tick(state);
 
-		while(!TimerFlag) {}
-		TimerFlag = 0;
+        while(!TimerFlag) {}
+        TimerFlag = 0;
     }
     return 1;
 }
-
-
