@@ -16,7 +16,7 @@
 #include "simAVRHeader.h"
 #endif
 
-typedef enum States {init, wait, C_4, D_4, E_4} States;
+typedef enum States {init, wait, power, upScale, downScale, uScaleWait, dScaleWait} States;
 
 volatile unsigned char TimerFlag = 0; // TimerISR() sets this to 1. C programmer should clear to 0.
 
@@ -99,37 +99,51 @@ int Tick(int state) {
     unsigned char A1 = ~PINA & 0x02;
     unsigned char A2 = ~PINA & 0x04;
 
+    double eightNotes[] = {261.63, 293.66, 329.63, 349.23, 392.00, 440.00,
+                          493.88, 523.25} //C, D, E, F, G, A, B, C
+
+    static unsigned char powerFlag
+    static unsigned char index;
+
+
     switch (state) {
         case init:
             state = wait;
             break;
 
         case wait:
-            if (A0 && !A1 && !A2) { state = C_4; }
-            else if (!A0 && A1 && !A2) { state = D_4; }
-            else if (!A0 && !A1 && A2) { state = E_4; }
+            if (A0 && !A1 && !A2) { state = power; }
+            else if (!A0 && A1 && !A2) { state = upScale; }
+            else if (!A0 && !A1 && A2) { state = downScale; }
             else { state = wait; }
             break;
 
-        case C_4:
-            if (A0 && !A1 && !A2) { state = C_4; }
-            else if (!A0 && A1 && !A2) { state = D_4; }
-            else if (!A0 && !A1 && A2) { state = E_4; }
+        case power:
+            state = wait;
+            break;
+
+        case upScale:
+            if (!A0 && A1 && !A2) { state = uScaleWait; }
+            else if (A0 && !A1 && !A2) { state = power; }
+            else if (!A0 && !A1 && A2) { state = downScale; }
             else if (!A0 && !A1 && !A2) { state = wait; }
             break;
 
-        case D_4:
-            if (!A0 && A1 && !A2) { state = D_4; }
-            else if (A0 && !A1 && !A2) { state = C_4; }
-            else if (!A0 && !A1 && A2) { state = E_4; }
-            else if (!A0 && !A1 && !A2) { state = wait; }
-            break;
-
-        case E_4:
-            if (!A0 && !A1 && A2) { state = E_4; }
+        case downScale:
+            if (!A0 && !A1 && A2) { state = dScaleWait; }
             else if (A0 && !A1 && !A2) { state = C_4; }
             else if (!A0 && A1 && !A2) { state = D_4; }
             else if (!A0 && !A1 && !A2) { state = wait; }
+            break;
+
+        case uScaleWait:
+            if (!A0 && A1 && !A2) { state = uScaleWait; }
+            else {state = wait; }
+            break;
+
+        case dScaleWait:
+            if (!A0 && !A1 && A2) { state = dScaleWait; }
+            else { state = wait ;}
             break;
 
         default:
@@ -146,16 +160,24 @@ int Tick(int state) {
             set_PWM(0);
             break;
 
-        case C_4:
-            set_PWM(261.63);
+        case power:
+            if (powerFlag) {
+                powerFlag = 0;
+                index = 0;
+                set_PWM(0)
+            }
+            else {
+                powerFlag = 1;
+                set_PWM(eightNotes[index]);
+            }
             break;
 
-        case D_4:
-            set_PWM(293.66);
+        case upScale:
+            if (index < sizeof(eightNotes)) { ++index; }
             break;
 
-        case E_4:
-            set_PWM(329.63);
+        case downScale:
+            if (index > 0) { --index; }
             break;
     }
 
