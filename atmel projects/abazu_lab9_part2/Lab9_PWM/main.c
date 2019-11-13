@@ -2,7 +2,7 @@
  *  Partner(s) Name:
  *	Lab Section:
  *	Assignment: Lab #9  Exercise #2
- *	Exercise Description: [ Using the ATmega1284â€™s PWM functionality, design a
+ *	Exercise Description: [ Using the ATmega1284’s PWM functionality, design a
         system where the notes: C4, D, E, F, G, A, B, and C5,  from the table
         at the top of the lab, can be generated on the speaker by scaling up or
         down the eight note scale. Three buttons are used to control the system.
@@ -105,7 +105,7 @@ int Tick(int state) {
     double eightNotes[] = {261.63, 293.66, 329.63, 349.23, 392.00, 440.00,
                           493.88, 523.25}; //C, D, E, F, G, A, B, C
 
-    unsigned char noteArrSize = sizeof eightNotes / sizeof[0];
+    unsigned char noteArrSize = sizeof eightNotes / sizeof eightNotes[0];
 
     static unsigned char powerFlag;
     static unsigned char index;
@@ -176,7 +176,7 @@ int Tick(int state) {
             break;
 
         case upScale:
-            if (index < 8) {
+            if (index < 7) {
                 ++index;
                 set_PWM(eightNotes[index]);
             }
