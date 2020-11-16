@@ -1,14 +1,18 @@
 /*	Author: abazu001
  *  Partner(s) Name:
  *	Lab Section:
- *	Assignment: Lab #8  Exercise #4
- *	Exercise Description: [ Design a system, using a bank of eight LEDs, where
-            the number of LEDs illuminated is a representation of how much light
-            is detected. For example, when more light is detected, more LEDs are
-            illuminated. ]
+ *	Assignment: Lab #9  Exercise #1
+ *	Exercise Description: [ Using the ATmega1284’s PWM functionality, design a
+    system that uses three buttons to select one of three tones to be generated
+    on the speaker. When a button is pressed, the tone mapped to it is generated
+    on the speaker. ]
  *
  *	I acknowledge all content contained herein, excluding template or example
  *	code, is my own original work.
+ *  Demo Link:
+    https://drive.google.com/file/d/1npUYqjxjrTZHfdpNJT2rWSzuAxseDJHX/view?usp=sharing
+ *
+ *  Note: only R'mail group can view this video
  */
 #include <avr/io.h>
 #include <avr/interrupt.h>
