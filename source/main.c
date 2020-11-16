@@ -11,6 +11,8 @@
  *
  *	I acknowledge all content contained herein, excluding template or example
  *	code, is my own original work.
+ *  Demo Link:
+ *  https://drive.google.com/file/d/15EA-YBmjZG1w5CPP7nqqG8U8a2JwVxky/view?usp=sharing
  */
 #include <avr/io.h>
 #include <avr/interrupt.h>
@@ -209,7 +211,7 @@ int main(void) {
     DDRB = 0x40; PORTB = 0x00;
 
 	TimerOn();
-	TimerSet(250);
+	TimerSet(100);
     PWM_on();
 
     States state = init;
